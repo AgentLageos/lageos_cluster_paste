@@ -3,13 +3,14 @@ import sys
 import time
 import base64
 import subprocess
+import platform
 
-from validate_config import validate_config
-from load_config import load_config
-from check_args import check_args
+from script.validate_config import validate_config
+from script.load_config import load_config
+from script.check_args import check_args
+from script.send_windows import send_windows
 
-
-def send(text):
+def send_linux(text):
     p = subprocess.Popen(
         ['xclip', '-selection', 'clipboard'],
         stdin=subprocess.PIPE
@@ -22,6 +23,21 @@ def send(text):
         '--clearmodifiers',
         'ctrl+shift+v'
     ])
+
+def send(text):
+
+    system = platform.system()
+
+    if system == "Linux":
+        send_linux(text)
+    elif system == "Windows":
+        send_windows(test)
+    else:
+        raise RuntimeError(
+            f"Unsupported operating system: {platform.system()}"
+        )
+
+
 
 
 
@@ -214,7 +230,7 @@ def check_args():
 def main():
 
 
-    path_to_config = "config.yml"
+    path_to_config = "script/config.yml"
 
     validate_config(path_to_config)
 
