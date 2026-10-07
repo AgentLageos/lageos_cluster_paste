@@ -31,7 +31,7 @@ def send(text):
     if system == "Linux":
         send_linux(text)
     elif system == "Windows":
-        send_windows(test)
+        send_windows(text)
     else:
         raise RuntimeError(
             f"Unsupported operating system: {platform.system()}"
