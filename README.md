@@ -1,9 +1,9 @@
 # Lageos-Cluster-Paste
 Paste (one) large file into restricted VNC-Connections that only allow to paste strings with less than 1000 characters. This script works by taking control of the clipboard.
-Currently Linux only.
+Made for Linux and Windows.
 
 
-## INSTALLATION ##
+## INSTALLATION Linux##
 
 -install Python (usually preinstalled on most Distros)
 
@@ -22,8 +22,26 @@ sudo apt install xclip xdotool
 sudo pacman -S xclip xdotool
 ```
 
-
 clone repo: 
+```bash
+git clone https://github.com/AgentLageos/Lageos-Cluster-Paste.git
+```	        
+## INSTALLATION Windows##
+
+-install Python
+
+-press WIN + R 
+-type "cmd"
+-press ENTER
+-in Terminal type
+
+```bash
+pip install pyyaml
+```
+
+-download repo as zip and unpack
+
+-or (recommended) clone repo: 
 ```bash
 git clone https://github.com/AgentLageos/Lageos-Cluster-Paste.git
 ```	        
@@ -37,7 +55,7 @@ git clone https://github.com/AgentLageos/Lageos-Cluster-Paste.git
 4. on your local machine run:
 
 ```bash
-cd Lageos-Cluster-Paste/script
+cd lagoes_cluster_paste
 python lcp.py <path/to/file>
 ```
 
@@ -48,7 +66,7 @@ python lcp.py <path/to/file>
 
 
 
-## IMPORTANT
+## IMPORTANT INFO FOR LINUX
 
 -Made for X11, might not work with Wayland.
 
@@ -57,9 +75,3 @@ python lcp.py <path/to/file>
 -When starting the script a "Remote Control"-Window might appear asking for permission. Just quickly press ok.
 If you where too slow pressing ok, you need to re-run, since the script won't wait for you to grant permission and won't check if the file was copied over completely.
 However it will only ask you once for permission.
-
-
-
-
-
-

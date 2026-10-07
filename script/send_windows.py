@@ -7,9 +7,6 @@ user32 = ctypes.WinDLL("user32", use_last_error=True)
 kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
 
 
-# ------------------------------------------------------------
-# Windows API Typen definieren
-# ------------------------------------------------------------
 
 # BOOL
 user32.OpenClipboard.argtypes = [ctypes.c_void_p]
@@ -53,9 +50,6 @@ user32.SetClipboardData.argtypes = [
 user32.SetClipboardData.restype = ctypes.c_void_p
 
 
-# ------------------------------------------------------------
-# Konstanten
-# ------------------------------------------------------------
 
 CF_UNICODETEXT = 13
 GMEM_MOVEABLE = 0x0002
@@ -73,15 +67,9 @@ KEYEVENTF_KEYUP = 0x0002
 
 def send_windows(text: str):
 
-    # --------------------------------------------------------
-    # Text vorbereiten
-    # --------------------------------------------------------
 
     data = text.encode("utf-16-le") + b"\x00\x00"
 
-    # --------------------------------------------------------
-    # Clipboard öffnen
-    # --------------------------------------------------------
 
     if not user32.OpenClipboard(None):
         error = ctypes.get_last_error()
@@ -95,10 +83,6 @@ def send_windows(text: str):
 
     try:
 
-        # ----------------------------------------------------
-        # Clipboard leeren
-        # ----------------------------------------------------
-
         if not user32.EmptyClipboard():
             error = ctypes.get_last_error()
 
@@ -106,10 +90,6 @@ def send_windows(text: str):
                 f"EmptyClipboard failed "
                 f"(error {error})"
             )
-
-        # ----------------------------------------------------
-        # Globalen Speicher reservieren
-        # ----------------------------------------------------
 
         h_global = kernel32.GlobalAlloc(
             GMEM_MOVEABLE,
@@ -123,10 +103,6 @@ def send_windows(text: str):
                 f"GlobalAlloc failed "
                 f"(error {error})"
             )
-
-        # ----------------------------------------------------
-        # Speicher locken
-        # ----------------------------------------------------
 
         p_global = kernel32.GlobalLock(
             h_global
@@ -142,10 +118,6 @@ def send_windows(text: str):
 
         try:
 
-            # ------------------------------------------------
-            # Daten in Windows-Speicher kopieren
-            # ------------------------------------------------
-
             ctypes.memmove(
                 p_global,
                 data,
@@ -157,10 +129,6 @@ def send_windows(text: str):
             kernel32.GlobalUnlock(
                 h_global
             )
-
-        # ----------------------------------------------------
-        # Speicher an Clipboard übergeben
-        # ----------------------------------------------------
 
         result = user32.SetClipboardData(
             CF_UNICODETEXT,
@@ -175,35 +143,19 @@ def send_windows(text: str):
                 f"(error {error})"
             )
 
-        # ----------------------------------------------------
-        # WICHTIG:
-        #
-        # Nach erfolgreichem SetClipboardData gehört der
-        # Speicher Windows.
-        #
-        # Deshalb NICHT GlobalFree aufrufen.
-        # ----------------------------------------------------
 
         h_global = None
 
     finally:
 
-        # Nur freigeben, wenn SetClipboardData
-        # den Speicher NICHT übernommen hat.
         if h_global:
             kernel32.GlobalFree(h_global)
 
         user32.CloseClipboard()
 
-    # --------------------------------------------------------
-    # Kurz warten
-    # --------------------------------------------------------
 
     time.sleep(0.05)
 
-    # --------------------------------------------------------
-    # Ctrl+Shift+V simulieren
-    # --------------------------------------------------------
 
     user32.keybd_event(
         VK_CONTROL,
@@ -226,7 +178,6 @@ def send_windows(text: str):
         0
     )
 
-    # V loslassen
     user32.keybd_event(
         VK_V,
         0,
@@ -234,7 +185,6 @@ def send_windows(text: str):
         0
     )
 
-    # Shift loslassen
     user32.keybd_event(
         VK_SHIFT,
         0,
@@ -242,7 +192,6 @@ def send_windows(text: str):
         0
     )
 
-    # Ctrl loslassen
     user32.keybd_event(
         VK_CONTROL,
         0,

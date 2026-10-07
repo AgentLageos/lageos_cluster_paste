@@ -4,11 +4,12 @@ import time
 import base64
 import subprocess
 import platform
-
+from pathlib import Path
 from script.validate_config import validate_config
 from script.load_config import load_config
 from script.check_args import check_args
-from script.send_windows import send_windows
+if platform.system() == "Windows":
+    from script.send_windows import send_windows
 
 def send_linux(text):
     p = subprocess.Popen(
@@ -90,12 +91,12 @@ def transfer_file(
     path_to_file = os.path.abspath(path_to_file)
     base_path = os.path.abspath(base_path)
 
-    relative_path = os.path.relpath(
-        path_to_file,
-        base_path
+    relative_path = Path(
+        os.path.relpath(path_to_file, base_path)
     )
 
-    remote_file = relative_path
+    remote_file = relative_path.as_posix()
+
     remote_b64 = remote_file + ".b64"
 
     #create target dir
