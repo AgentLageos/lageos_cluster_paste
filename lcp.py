@@ -102,12 +102,14 @@ def transfer_file(
     #create target dir
     remote_dir = os.path.dirname(remote_file)
 
+    clear_counter = 0
+
     if remote_dir:
         send(
             f"mkdir -p -- '{remote_dir}'\n"
         )
 
-        time.sleep(0.2)
+        time.sleep(paste_delay)
     
     #create file info
 
@@ -126,7 +128,7 @@ def transfer_file(
         f"> '{remote_b64}'\n"
     )
 
-    time.sleep(0.5)
+    time.sleep(paste_delay)
 
     #read and send in chunks
     sent = 0
@@ -165,6 +167,12 @@ def transfer_file(
 
             time.sleep(paste_delay)
 
+            clear_counter += 1
+            if (clear_counter>=10):
+                send('clear\n')
+                time.sleep(paste_delay)
+                clear_counter = 0
+
     print()
 
 
@@ -173,14 +181,18 @@ def transfer_file(
         f"base64 -d '{remote_b64}' > '{remote_file}'\n"
     )
 
-    time.sleep(0.5)
+    time.sleep(paste_delay)
 
     #delete tmp files
     send(
         f"rm -f -- '{remote_b64}'\n"
     )
 
-    time.sleep(0.5)
+
+    time.sleep(paste_delay)
+    send('clear\n')
+
+    time.sleep(paste_delay)
 
     print(
         f"Transferred: {relative_path}"
@@ -342,9 +354,12 @@ def main():
             paste_delay=paste_delay
         )
 
+    send('clear\n')
+    time.sleep(paste_delay)
     send(
         'echo "DONE"\n'
     )
+
 
     print()
     print("=" * 70)
