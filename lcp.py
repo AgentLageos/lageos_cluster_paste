@@ -2,28 +2,17 @@ import os
 import sys
 import time
 import base64
-import subprocess
 import platform
 from pathlib import Path
 from script.validate_config import validate_config
 from script.load_config import load_config
 from script.check_args import check_args
+from script.collect_files import collect_files
 if platform.system() == "Windows":
     from script.send_windows import send_windows
+elif platform.system() == "Linux":
+    from script.send_linux import send_linux
 
-def send_linux(text):
-    p = subprocess.Popen(
-        ['xclip', '-selection', 'clipboard'],
-        stdin=subprocess.PIPE
-    )
-    p.communicate(input=text.encode())
-
-    subprocess.run([
-        'xdotool',
-        'key',
-        '--clearmodifiers',
-        'ctrl+shift+v'
-    ])
 
 def send(text):
 
@@ -39,42 +28,6 @@ def send(text):
         )
 
 
-
-
-
-def collect_files(source):
-    """
-    collects to files to be transfered
-    could be files or dirs
-    searches recursivly
-    """
-
-    source = os.path.abspath(source)
-
-    if not os.path.exists(source):
-        raise FileNotFoundError(
-            f"Source does not exist: {source}"
-        )
-
-    if os.path.isfile(source):
-        return [source]
-
-    if os.path.isdir(source):
-        files = []
-
-        for root, dirs, filenames in os.walk(source):
-            for filename in filenames:
-                files.append(
-                    os.path.join(root, filename)
-                )
-
-        files.sort()
-
-        return files
-
-    raise ValueError(
-        f"Unsupported source: {source}"
-    )
 
 
 def transfer_file(
@@ -201,47 +154,12 @@ def transfer_file(
 
 #args
 
-def check_args():
-
-    if len(sys.argv) != 2:
-
-        print(
-            f"Usage: {sys.argv[0]} <file-or-directory>"
-        )
-
-        print()
-        print("Examples:")
-        print(
-            f"  {sys.argv[0]} file.txt"
-        )
-        print(
-            f"  {sys.argv[0]} ./my_project"
-        )
-
-        sys.exit(1)
-
-    source = os.path.abspath(
-        sys.argv[1]
-    )
-
-    if not os.path.exists(source):
-
-        print(
-            f"ERROR: Source does not exist:"
-            f"\n{source}"
-        )
-
-        sys.exit(1)
-
-    return source
-
 
 # ============================================================
 # Main
 # ============================================================
 
 def main():
-
 
     path_to_config = "script/config.yml"
 
@@ -252,13 +170,9 @@ def main():
     chunk_size = config["chunk_size"]
     paste_delay = config["paste_delay"]
 
-    print(
-        f"Configured chunk size: {chunk_size}"
-    )
+    print(f"Configured chunk size: {chunk_size}")
 
-    print(
-        f"Paste delay: {paste_delay}s"
-    )
+    print(f"Paste delay: {paste_delay}s")
 
 
     source = check_args()
@@ -271,21 +185,15 @@ def main():
 
     if not files:
 
-        print(
-            "ERROR: No files found."
-        )
+        print("ERROR: No files found.")
 
         sys.exit(1)
 
     print()
-    print(
-        f"Found {len(files)} file(s):"
-    )
+    print(f"Found {len(files)} file(s):")
 
     for file in files:
-        print(
-            f"  {file}"
-        )
+        print(f"  {file}")
 
     # --------------------------------------------------------
     # Base64 chunk size
@@ -299,22 +207,14 @@ def main():
     # RAW_chunk_size = floor(chunk_size / 4) * 3
     # --------------------------------------------------------
 
-    RAW_chunk_size = (
-        chunk_size // 4
-    ) * 3
+    RAW_chunk_size = (chunk_size // 4) * 3
 
     if RAW_chunk_size <= 0:
 
-        raise ValueError(
-            "chunk_size is too small. "
-            "It must be at least 4."
-        )
+        raise ValueError("chunk_size is too small. \nIt must be at least 4.")
 
     print()
-    print(
-        f"Base64 chunk size: "
-        f"{chunk_size} chars"
-    )
+    print(f"Base64 chunk size: {chunk_size} chars")
 
     print(
         f"Raw chunk size: "
@@ -322,24 +222,15 @@ def main():
     )
 
     if os.path.isfile(source):
-
         base_path = os.path.dirname(source)
-
     else:
-
         base_path = os.path.dirname(source)
-
     send("\n")
-
     print()
-    print(
-        "Switch NOW to VNC Window..."
-    )
+    print("Switch NOW to VNC Window...")
 
     for i in range(5, 0, -1):
-
         print(i)
-
         time.sleep(1)
 
     print()
