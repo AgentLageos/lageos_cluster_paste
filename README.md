@@ -62,7 +62,14 @@ python lcp.py <path/to/file>
 
 5. quickly switch to open VNC window AND (VERY IMPORTANT) left-click
 
-6. Wait for finish.
+6. Wait for finish. Your local terminal shows a progress bar over all files:
+
+```
+[2/5] [#############-----------------]  43.39% | file  56.25% | elapsed 1m12s | ETA 1m34s
+```
+
+`[2/5]` is the current file, the bar shows the overall progress (in bytes), `file` the progress of the current file.
+The ETA is estimated from the average speed so far.
 
 7. Check the VNC terminal: every file is verified (SHA-256) on the remote side.
 It shows either `DONE - ALL OK` or a list of failed files plus a command like:

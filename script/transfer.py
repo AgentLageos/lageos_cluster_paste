@@ -12,6 +12,81 @@ from script.read_file_chunks import read_file_chunks
 REMOTE_FAILED = ".lcp_failed"
 REMOTE_RETRY = ".lcp_retry"
 
+BAR_WIDTH = 30
+
+
+def format_duration(seconds):
+    """
+    seconds -> 1h02m03s / 2m03s / 3s
+    """
+
+    seconds = int(seconds)
+
+    hours, rest = divmod(seconds, 3600)
+    minutes, seconds = divmod(rest, 60)
+
+    if hours:
+        return f"{hours}h{minutes:02d}m{seconds:02d}s"
+
+    if minutes:
+        return f"{minutes}m{seconds:02d}s"
+
+    return f"{seconds}s"
+
+
+class Progress:
+    """
+    overall progress over all files of one run
+    """
+
+    def __init__(self, total_files, total_bytes):
+
+        self.total_files = total_files
+        self.total_bytes = total_bytes
+        self.done_bytes = 0
+        self.start = time.monotonic()
+
+    def show(self, index, file_sent, file_size):
+
+        done = self.done_bytes + file_sent
+
+        if self.total_bytes > 0:
+            fraction = done / self.total_bytes
+        else:
+            fraction = 1.0
+
+        if file_size > 0:
+            file_progress = file_sent / file_size * 100
+        else:
+            file_progress = 100.0
+
+        filled = int(fraction * BAR_WIDTH)
+        bar = "#" * filled + "-" * (BAR_WIDTH - filled)
+
+        elapsed = time.monotonic() - self.start
+
+        #estimate from average speed so far
+        if 0 < fraction < 1:
+            eta = format_duration(elapsed / fraction - elapsed)
+        elif fraction >= 1:
+            eta = "0s"
+        else:
+            eta = "?"
+
+        print(
+            f"\r[{index}/{self.total_files}] "
+            f"[{bar}] {fraction * 100:6.2f}% | "
+            f"file {file_progress:6.2f}% | "
+            f"elapsed {format_duration(elapsed)} | "
+            f"ETA {eta}   ",
+            end="",
+            flush=True
+        )
+
+    def finish_file(self, file_size):
+
+        self.done_bytes += file_size
+
 
 def clear_remote_logs(paste_delay):
     """
@@ -31,7 +106,8 @@ def transfer_file(
     chunk_size: int,
     paste_delay: float,
     index: int,
-    retry_hint: bool
+    retry_hint: bool,
+    progress: Progress
 ):
     """
     transfers single file
@@ -71,7 +147,7 @@ def transfer_file(
 
     print()
     print("=" * 70)
-    print(f"File: {relative_path}")
+    print(f"File {index}/{progress.total_files}: {relative_path}")
     print(f"Size: {file_size:,} bytes")
     print("=" * 70)
 
@@ -85,8 +161,9 @@ def transfer_file(
 
     #read and send in chunks
     sent = 0
-    chunk_number = 0
     sha256 = hashlib.sha256()
+
+    progress.show(index, sent, file_size)
 
     for raw in read_file_chunks(path_to_file, chunk_size):
 
@@ -99,20 +176,8 @@ def transfer_file(
         )
 
         sent += len(raw)
-        chunk_number += 1
 
-        if file_size > 0:
-            progress = sent / file_size * 100
-        else:
-            progress = 100.0
-
-        print(
-            f"\rChunk {chunk_number} | "
-            f"{sent:,} / {file_size:,} bytes "
-            f"({progress:6.2f}%)",
-            end="",
-            flush=True
-        )
+        progress.show(index, sent, file_size)
 
         time.sleep(paste_delay)
 
@@ -157,6 +222,8 @@ def transfer_file(
     send('clear\n')
 
     time.sleep(paste_delay)
+
+    progress.finish_file(file_size)
 
     print(
         f"Transferred: {relative_path}"

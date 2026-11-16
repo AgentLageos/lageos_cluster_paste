@@ -8,7 +8,7 @@ from script.collect_files import collect_files
 from script.send import send
 from script.state import select_changed_files, save_state
 from script.manifest import save_manifest, load_retry_files
-from script.transfer import clear_remote_logs, transfer_file, send_summary
+from script.transfer import clear_remote_logs, transfer_file, send_summary, Progress
 
 #realpath: also works when called via symlink
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -158,6 +158,11 @@ def main():
 
     clear_remote_logs(paste_delay)
 
+    progress = Progress(
+        total_files=len(files),
+        total_bytes=sum(os.path.getsize(file) for file in files)
+    )
+
     for number, file in enumerate(files, start=1):
 
         transfer_file(
@@ -166,7 +171,8 @@ def main():
             chunk_size=RAW_chunk_size,
             paste_delay=paste_delay,
             index=number,
-            retry_hint=retry_hint
+            retry_hint=retry_hint,
+            progress=progress
         )
 
     send('clear\n')
