@@ -7,4 +7,3 @@ def read_file_chunks(file_name, chunk_size):
                 break
 
             yield chunk
-
