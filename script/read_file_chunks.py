@@ -7,6 +7,4 @@ def read_file_chunks(file_name, chunk_size):
                 break
 
             yield chunk
-for chunk in read_file_chunks(file_name, config["chunk_size"]):
-    print(len(chunk))
 

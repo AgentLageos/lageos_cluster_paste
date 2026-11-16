@@ -20,10 +20,23 @@ def validate_config(config_file):
         "paste_delay",
     }
 
-    if set(config.keys()) != required_keys:
+    optional_keys = {
+        "retry_hint",
+    }
+
+    missing = required_keys - set(config.keys())
+    unknown = set(config.keys()) - required_keys - optional_keys
+
+    if missing:
         raise ValueError(
-            f"Config must contain exactly: "
-            f"{', '.join(sorted(required_keys))}"
+            f"Config is missing: "
+            f"{', '.join(sorted(missing))}"
+        )
+
+    if unknown:
+        raise ValueError(
+            f"Unknown config keys: "
+            f"{', '.join(sorted(unknown))}"
         )
 
     if not isinstance(config["chunk_size"], int):
@@ -31,6 +44,9 @@ def validate_config(config_file):
 
     if not isinstance(config["paste_delay"], (int, float)):
         raise ValueError("paste_delay (in seconds) must be a number.")
+
+    if "retry_hint" in config and not isinstance(config["retry_hint"], bool):
+        raise ValueError("retry_hint must be true or false.")
 
     return True
 
