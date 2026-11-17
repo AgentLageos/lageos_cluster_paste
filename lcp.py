@@ -34,6 +34,7 @@ def main():
     chunk_size = config["chunk_size"]
     paste_delay = config["paste_delay"]
     retry_hint = config.get("retry_hint", True)
+    exclude_git = config.get("exclude_git", True)
 
     print(
         f"Configured chunk size: {chunk_size}"
@@ -47,6 +48,10 @@ def main():
         f"Retry hint: {'on' if retry_hint else 'off'}"
     )
 
+    print(
+        f"Exclude git files: {'on' if exclude_git else 'off'}"
+    )
+
 
     source, retry_numbers, force = check_args()
 
@@ -58,7 +63,7 @@ def main():
         print()
         print(f"Source: {source}")
 
-        files = collect_files(source)
+        files = collect_files(source, exclude_git)
 
         #file: lands directly in remote cwd
         #dir: dir itself is recreated in remote cwd

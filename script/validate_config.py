@@ -22,6 +22,7 @@ def validate_config(config_file):
 
     optional_keys = {
         "retry_hint",
+        "exclude_git",
     }
 
     missing = required_keys - set(config.keys())
@@ -47,6 +48,9 @@ def validate_config(config_file):
 
     if "retry_hint" in config and not isinstance(config["retry_hint"], bool):
         raise ValueError("retry_hint must be true or false.")
+
+    if "exclude_git" in config and not isinstance(config["exclude_git"], bool):
+        raise ValueError("exclude_git must be true or false.")
 
     return True
 

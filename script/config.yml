@@ -2,3 +2,5 @@ chunk_size: 4000
 paste_delay: 0.2
 # on failed integrity check, show command to re-send only failed files
 retry_hint: true
+# skip .git dirs and .gitignore/.gitattributes/.gitmodules when sending a dir
+exclude_git: true

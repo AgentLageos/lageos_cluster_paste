@@ -81,6 +81,14 @@ python lcp.py --retry 2 5
 Run it on your local machine to re-send only the failed files (the numbers refer to the last run).
 This hint can be turned off with `retry_hint: false` in `script/config.yml`.
 
+Git files (`.git` directories, `.gitignore`, `.gitattributes`, `.gitmodules`) are not sent when transferring a directory. To send them anyway, set `exclude_git: false` in `script/config.yml`.
+
+To block a directory from being sent, put an (empty) file named `.lcp_block` into it. The directory and everything inside it, including subdirectories, is skipped:
+
+```bash
+touch ./my_project/build/.lcp_block
+```
+
 Requires `sha256sum` on the remote machine (part of coreutils). If it is missing, all files are reported as failed.
 
 ## Transferring a directory again
