@@ -49,6 +49,10 @@ user32.SetClipboardData.argtypes = [
 ]
 user32.SetClipboardData.restype = ctypes.c_void_p
 
+# HWND
+user32.GetForegroundWindow.argtypes = []
+user32.GetForegroundWindow.restype = ctypes.c_void_p
+
 
 
 CF_UNICODETEXT = 13
@@ -198,3 +202,21 @@ def send_windows(text: str):
         KEYEVENTF_KEYUP,
         0
     )
+
+
+def active_window_windows():
+    """
+    handle of the currently focused window
+    """
+    return user32.GetForegroundWindow()
+
+
+def flush_input_windows():
+    """
+    drop keystrokes/pastes that landed in this console
+    so cmd does not run them after exit
+    """
+    import msvcrt
+
+    while msvcrt.kbhit():
+        msvcrt.getwch()

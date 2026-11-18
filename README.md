@@ -1,5 +1,5 @@
 # Lageos-Cluster-Paste
-Paste (one) large file into restricted VNC-Connections that only allow to paste strings with less than 1000 characters. This script works by taking control of the clipboard.
+Paste entire directories (or just one file) into restricted VNC-Connections that only allow to paste strings with less than X characters. This script works by taking control of the clipboard.
 Made for Linux and Windows.
 
 
@@ -61,6 +61,10 @@ python lcp.py <path/to/file>
 
 
 5. quickly switch to open VNC window AND (VERY IMPORTANT) left-click
+
+   To abort a running transfer, click any other window (e.g. your local terminal).
+   The script notices that the VNC window lost focus and stops before the next paste.
+   (Ctrl+C does not work: while the script runs, the VNC window has focus, so Ctrl+C goes to the remote side.)
 
 6. Wait for finish. Your local terminal shows a progress bar over all files:
 

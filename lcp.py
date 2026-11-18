@@ -5,7 +5,7 @@ from script.validate_config import validate_config
 from script.load_config import load_config
 from script.check_args import check_args
 from script.collect_files import collect_files
-from script.send import send
+from script.send import send, lock_target_window, flush_input, FocusLost
 from script.state import select_changed_files, save_state
 from script.manifest import save_manifest, load_retry_files
 from script.transfer import clear_remote_logs, transfer_file, send_summary, Progress
@@ -160,6 +160,38 @@ def main():
 
     print()
     print("Starting...")
+    print("(to abort: click any other window, e.g. this terminal)")
+
+    #from now on every paste checks that the VNC window still has focus
+    lock_target_window()
+
+    try:
+        run_transfer(files, base_path, RAW_chunk_size, paste_delay, retry_hint)
+
+    except (FocusLost, KeyboardInterrupt):
+
+        flush_input()
+
+        print()
+        print()
+        print("=" * 70)
+        print("ABORTED")
+        print("=" * 70)
+        print("The file being sent is incomplete on the remote side.")
+        print("Nothing was saved, the next run sends the same files again.")
+
+        sys.exit(1)
+
+    if new_state is not None:
+        save_state(source, new_state)
+
+    print()
+    print("=" * 70)
+    print("DONE")
+    print("=" * 70)
+
+
+def run_transfer(files, base_path, RAW_chunk_size, paste_delay, retry_hint):
 
     clear_remote_logs(paste_delay)
 
@@ -184,14 +216,6 @@ def main():
     time.sleep(paste_delay)
 
     send_summary(retry_hint)
-
-    if new_state is not None:
-        save_state(source, new_state)
-
-    print()
-    print("=" * 70)
-    print("DONE")
-    print("=" * 70)
 
 
 if __name__ == "__main__":
